@@ -3,19 +3,16 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# 1. Load the trained model pipeline
-# Ensure 'water_model.pkl' is in the same directory
 model = joblib.load('water_model.pkl')
 
-# 2. Define the prediction function
+
 def predict_potability(ph, hardness, solids, chloramines, sulfate, 
                         conductivity, organic_carbon, trihalomethanes, turbidity):
     
-    # Calculate the engineered feature (Chemical_Balance) used during training
-    # We add a tiny epsilon (1e-5) to avoid division by zero
+
     chemical_balance = chloramines / (sulfate + 1e-5)
     
-    # Create a DataFrame with the exact column names used during training
+
     input_df = pd.DataFrame([[
         ph, hardness, solids, chloramines, sulfate, 
         conductivity, organic_carbon, trihalomethanes, turbidity, chemical_balance
@@ -24,7 +21,6 @@ def predict_potability(ph, hardness, solids, chloramines, sulfate,
         'Conductivity', 'Organic_carbon', 'Trihalomethanes', 'Turbidity', 'Chemical_Balance'
     ])
     
-    # Get prediction and probability
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0]
     
@@ -33,7 +29,7 @@ def predict_potability(ph, hardness, solids, chloramines, sulfate,
     else:
         return f"❌ Not Potable (Unsafe)\nConfidence: {probability[0]:.2%}"
 
-# 3. Create the Gradio UI
+
 interface = gr.Interface(
     fn=predict_potability,
     inputs=[
@@ -53,6 +49,5 @@ interface = gr.Interface(
     theme="soft"
 )
 
-# 4. Launch the app
 if __name__ == "__main__":
     interface.launch()
